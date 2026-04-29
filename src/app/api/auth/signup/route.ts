@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { prisma } from "@/server/db/prisma";
+import { createFallbackUser, fallbackUsers } from "@/server/auth/fallback-store";
 
 export async function POST(req: Request) {
   try {
@@ -11,6 +12,15 @@ export async function POST(req: Request) {
 
     if (!name || !email || password.length < 8) {
       return NextResponse.json({ error: "Name, valid email, and 8+ char password are required." }, { status: 400 });
+    }
+
+    if (!process.env.DATABASE_URL) {
+      if (fallbackUsers.has(email)) {
+        return NextResponse.json({ error: "Account already exists." }, { status: 409 });
+      }
+      const passwordHash = await bcrypt.hash(password, 12);
+      createFallbackUser({ name, email, passwordHash });
+      return NextResponse.json({ ok: true, mode: "fallback" });
     }
 
     const exists = await prisma.user.findUnique({ where: { email } });
@@ -26,6 +36,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Signup failed.";
-    return NextResponse.json({ error: `Signup failed: ${message}` }, { status: 500 });
+    const dbMissing = message.includes("DATABASE_URL");
+    return NextResponse.json({ error: dbMissing ? "Server database is not configured yet. Please add DATABASE_URL in deployment settings or use configured environment." : `Signup failed: ${message}` }, { status: 500 });
   }
 }

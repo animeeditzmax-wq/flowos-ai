@@ -4,6 +4,7 @@ import Google from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/server/db/prisma";
+import { fallbackUsers } from "@/server/auth/fallback-store";
 
 const providers: NextAuthConfig["providers"] = [
   Credentials({
@@ -15,6 +16,15 @@ const providers: NextAuthConfig["providers"] = [
     authorize: async (credentials) => {
       if (!credentials?.email || !credentials.password) return null;
       const email = String(credentials.email).trim().toLowerCase();
+
+      if (!process.env.DATABASE_URL) {
+        const localUser = fallbackUsers.get(email);
+        if (!localUser) return null;
+        const validLocal = await bcrypt.compare(credentials.password as string, localUser.passwordHash);
+        if (!validLocal) return null;
+        return { id: localUser.id, email: localUser.email, name: localUser.name, role: localUser.role };
+      }
+
       const user = await prisma.user.findUnique({ where: { email } });
       if (!user?.passwordHash) return null;
       const valid = await bcrypt.compare(credentials.password as string, user.passwordHash);
