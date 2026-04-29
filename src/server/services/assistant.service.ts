@@ -85,11 +85,16 @@ function buildDataSummary(subscriptions: { name: string; monthlyCostUsd: number;
 
 export async function runAssistantQuery(userId: string, question: string) {
   const permissions = await getAssistantPermissions(userId);
-  if (!permissions.subscriptionTracking || !permissions.billingDetection) {
+  const missing = [
+    !permissions.email ? "email receipts" : null,
+    !permissions.subscriptionTracking ? "subscription tracking" : null,
+    !permissions.billingDetection ? "billing detection" : null
+  ].filter(Boolean);
+
+  if (missing.length > 0) {
     return {
       blocked: true,
-      message:
-        "I need permission for subscription tracking and billing detection before I can provide account-specific recommendations.",
+      message: `I need permission for ${missing.join(", ")} before I can provide account-specific recommendations.`,
       permissions
     };
   }

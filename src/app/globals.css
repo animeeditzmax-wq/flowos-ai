@@ -82,6 +82,15 @@ body {
   animation: fish-swim-loop 16s linear infinite;
 }
 
+.fish-swim-slow {
+  animation: fish-swim-loop 20s linear infinite;
+}
+
+.fish-swim-delayed {
+  animation: fish-swim-loop 18s linear infinite;
+  animation-delay: 4s;
+}
+
 .stream-glow {
   background: radial-gradient(circle at center, rgba(185, 223, 246, 0.5), rgba(185, 223, 246, 0));
   animation: stream-pulse 6s ease-in-out infinite;

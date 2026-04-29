@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { executionQueue } from "@/lib/mock-data";
+
+type QueueItem = { name: string; status: string; progress: number };
 
 const starterPrompts = [
   "Cancel my Netflix if unused this month",
@@ -14,6 +15,32 @@ const starterPrompts = [
 
 export function CommandCenterPage() {
   const [command, setCommand] = useState(starterPrompts[0]);
+  const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  async function refreshQueue() {
+    const res = await fetch("/api/dashboard/summary");
+    const data = await res.json();
+    setQueue(data.queue ?? []);
+  }
+
+  useEffect(() => {
+    refreshQueue().catch(() => setQueue([]));
+  }, []);
+
+  async function executeCommand() {
+    setLoading(true);
+    try {
+      await fetch("/api/ai/command", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ command })
+      });
+      await refreshQueue();
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <main className="mx-auto grid max-w-7xl gap-5 px-4 py-8 md:grid-cols-3 md:px-8">
@@ -28,24 +55,23 @@ export function CommandCenterPage() {
         />
 
         <div className="flex flex-wrap gap-2">
-          {starterPrompts.map((p) => (
-            <button key={p} onClick={() => setCommand(p)} className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-slate-200 hover:bg-white/10">
-              {p}
+          {starterPrompts.map((prompt) => (
+            <button key={prompt} onClick={() => setCommand(prompt)} className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs text-slate-200 hover:bg-white/10">
+              {prompt}
             </button>
           ))}
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Button variant="gradient">Execute with AI</Button>
-          <Button variant="ghost">Show approvals</Button>
-          <Button variant="ghost">Open guardrails</Button>
+        <div className="flex flex-wrap gap-2">          <Button variant="gradient" onClick={executeCommand} disabled={loading}>{loading ? "Executing..." : "Execute with AI"}</Button>
+          <Button variant="ghost" onClick={refreshQueue}>Refresh queue</Button>
         </div>
       </Card>
 
       <Card>
         <p className="text-sm text-slate-300">Task Status</p>
         <div className="mt-4 space-y-3">
-          {executionQueue.slice(0, 3).map((item) => (
+          {queue.length === 0 && <p className="text-xs text-slate-400">No live tasks yet.</p>}
+          {queue.slice(0, 3).map((item) => (
             <div key={item.name} className="rounded-xl border border-white/10 bg-white/[0.03] p-3">
               <p className="text-sm text-slate-100">{item.name}</p>
               <p className="mt-1 text-xs text-indigo-100">{item.status}</p>
