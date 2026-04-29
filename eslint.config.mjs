@@ -1,14 +1,14 @@
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTypescript from "eslint-config-next/typescript";
-import tseslint from "typescript-eslint";
+import { FlatCompat } from "@eslint/eslintrc";
+
+const compat = new FlatCompat({
+  baseDirectory: import.meta.dirname,
+});
 
 const eslintConfig = [
   {
     ignores: [".next/**", "node_modules/**", "coverage/**", "prisma/generated/**"],
   },
-  ...nextVitals,
-  ...nextTypescript,
-  ...tseslint.configs.recommended,
+  ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
     rules: {
       "@next/next/no-html-link-for-pages": "off",
