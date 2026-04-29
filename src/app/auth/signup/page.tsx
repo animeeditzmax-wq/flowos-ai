@@ -23,7 +23,8 @@ export default function SignUpPage() {
         body: JSON.stringify({ name: name.trim(), email: email.trim().toLowerCase(), password })
       });
 
-      const data = (await response.json()) as { error?: string };
+      const raw = await response.text();
+      const data = (raw ? JSON.parse(raw) : {}) as { error?: string };
       if (!response.ok) {
         setError(data.error ?? "Unable to create account.");
         return;
@@ -42,8 +43,12 @@ export default function SignUpPage() {
       }
 
       window.location.href = loginResult.url ?? "/onboarding/permissions";
-    } catch {
-      setError("Network error. Please try again.");
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message.includes("JSON") ? "Unexpected server response. Please retry." : error.message);
+      } else {
+        setError("Unexpected error. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
