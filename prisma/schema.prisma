@@ -1,0 +1,366 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  BUSINESS
+  ADMIN
+}
+
+enum PlanTier {
+  PERSONAL
+  PRO
+  BUSINESS
+}
+
+enum TaskType {
+  SUBSCRIPTION
+  REFUND
+  BILL_OPTIMIZATION
+  BOOKING
+  PURCHASE
+  EXPENSE
+  REPORT
+}
+
+enum TaskStatus {
+  DRAFT
+  AWAITING_APPROVAL
+  APPROVED
+  EXECUTING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum ApprovalSensitivity {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum RefundStatus {
+  OPEN
+  FOLLOWUP
+  APPROVED
+  REJECTED
+  PAID
+}
+
+enum NotificationType {
+  APPROVAL_REQUEST
+  TASK_UPDATE
+  BILLING
+  WEEKLY_REPORT
+  SECURITY
+}
+
+model User {
+  id                String             @id @default(cuid())
+  email             String             @unique
+  name              String?
+  passwordHash      String?
+  role              UserRole           @default(USER)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  profile           Profile?
+  settings          UserSettings?
+  connectedAccounts ConnectedAccount[]
+  subscriptions     Subscription[]
+  refunds           RefundClaim[]
+  bookings          Booking[]
+  purchases         PurchaseRecommendation[]
+  aiTasks           AITask[]
+  taskHistory       AITaskHistory[]
+  paymentMethods    PaymentMethod[]
+  permissions       PermissionPolicy[]
+  notifications     Notification[]
+  reports           WeeklyReport[]
+  billingHistory    BillingHistory[]
+  accounts          Account[]
+  sessions          Session[]
+  activePlanId      String?
+  activePlan        Plan?              @relation(fields: [activePlanId], references: [id])
+
+  @@index([role])
+  @@index([createdAt])
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  phone     String?
+  country   String?
+  timezone  String?  @default("UTC")
+  company   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserSettings {
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  aiAutonomyEnabled     Boolean  @default(false)
+  weeklyReportDay       String   @default("MONDAY")
+  maxAutonomousSpendUsd Int      @default(100)
+  darkMode              Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model ConnectedAccount {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider       String
+  accountType    String
+  externalRef    String?
+  accessScope    String?
+  isActive       Boolean  @default(true)
+  encryptedToken String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId, provider])
+}
+
+model Plan {
+  id                 String           @id @default(cuid())
+  tier               PlanTier         @unique
+  name               String
+  monthlyPriceUsd    Int
+  stripePriceId      String           @unique
+  features           Json
+  users              User[]
+  billingHistoryRows BillingHistory[]
+}
+
+model Subscription {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name              String
+  category          String?
+  monthlyCostUsd    Float
+  billingCycle      String   @default("monthly")
+  nextBillingDate   DateTime?
+  isActive          Boolean  @default(true)
+  usageScore        Int      @default(0)
+  cancellationScore Int      @default(0)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId, isActive])
+}
+
+model RefundClaim {
+  id               String       @id @default(cuid())
+  userId           String
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  merchant         String
+  amountUsd        Float
+  reason           String
+  status           RefundStatus @default(OPEN)
+  externalCaseId   String?
+  followUpRequired Boolean      @default(false)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  logs             RefundLog[]
+
+  @@index([userId, status])
+}
+
+model RefundLog {
+  id          String      @id @default(cuid())
+  refundId    String
+  refundClaim RefundClaim @relation(fields: [refundId], references: [id], onDelete: Cascade)
+  note        String
+  createdAt   DateTime    @default(now())
+
+  @@index([refundId])
+}
+
+model Booking {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  serviceType    String
+  providerName   String?
+  preferredDate  DateTime?
+  confirmedDate  DateTime?
+  status         String   @default("PENDING")
+  estimatedCost  Float?
+  approvalNeeded Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId, status])
+}
+
+model PurchaseRecommendation {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  query           String
+  budgetUsd       Float
+  recommendation  Json
+  estimatedSaving Float?
+  sourceCount     Int      @default(0)
+  createdAt       DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model AITask {
+  id                String              @id @default(cuid())
+  userId            String
+  user              User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type              TaskType
+  command           String
+  classification    String
+  status            TaskStatus          @default(DRAFT)
+  sensitivity       ApprovalSensitivity @default(MEDIUM)
+  approvalRequired  Boolean             @default(true)
+  approvedAt        DateTime?
+  executionPlan     Json
+  expectedSavings   Float?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  history           AITaskHistory[]
+
+  @@index([userId, status])
+  @@index([type])
+}
+
+model AITaskHistory {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskId     String
+  task       AITask   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  event      String
+  eventData  Json?
+  createdAt  DateTime @default(now())
+
+  @@index([taskId, createdAt])
+}
+
+model PaymentMethod {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  stripePaymentRef String
+  brand            String?
+  last4            String?
+  expMonth         Int?
+  expYear          Int?
+  isDefault        Boolean  @default(false)
+  createdAt        DateTime @default(now())
+
+  @@index([userId])
+}
+
+model PermissionPolicy {
+  id                   String              @id @default(cuid())
+  userId               String
+  user                 User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  taskType             TaskType
+  sensitivity          ApprovalSensitivity @default(MEDIUM)
+  autoExecute          Boolean             @default(false)
+  maxSpendWithoutAsk   Int                 @default(0)
+  cancellationAllowed  Boolean             @default(false)
+  bookingAllowed       Boolean             @default(false)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  @@unique([userId, taskType])
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type        NotificationType
+  title       String
+  body        String
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  @@index([userId, isRead])
+}
+
+model WeeklyReport {
+  id                    String   @id @default(cuid())
+  userId                String
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekStart             DateTime
+  weekEnd               DateTime
+  moneySavedUsd         Float
+  subscriptionsRemoved  Int
+  refundsCompleted      Int
+  optimizationSummary   Json
+  generatedByTaskId     String?
+  createdAt             DateTime @default(now())
+
+  @@unique([userId, weekStart, weekEnd])
+}
+
+model BillingHistory {
+  id                  String   @id @default(cuid())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId              String
+  plan                Plan     @relation(fields: [planId], references: [id])
+  stripeInvoiceId     String?
+  stripeSubscriptionId String?
+  amountUsd           Int
+  status              String
+  periodStart         DateTime?
+  periodEnd           DateTime?
+  createdAt           DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
