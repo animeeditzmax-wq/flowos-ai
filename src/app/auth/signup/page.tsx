@@ -34,9 +34,9 @@ export default function SignUpPage() {
       <section className="w-full max-w-md rounded-2xl border border-white/60 bg-white/50 p-6 backdrop-blur-xl">
         <h1 className="text-2xl font-semibold text-slate-800">Create your FlowOS account</h1>
         <form className="mt-4 space-y-3" onSubmit={handleSignUp}>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" required className="w-full rounded-lg border border-slate-300 bg-white/80 px-3 py-2 text-sm" />
-          <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" type="email" required className="w-full rounded-lg border border-slate-300 bg-white/80 px-3 py-2 text-sm" />
-          <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" minLength={8} required className="w-full rounded-lg border border-slate-300 bg-white/80 px-3 py-2 text-sm" />
+          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" required className="w-full rounded-lg border border-slate-300 bg-white/85 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500" />
+          <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" type="email" required className="w-full rounded-lg border border-slate-300 bg-white/85 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500" />
+          <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" minLength={8} required className="w-full rounded-lg border border-slate-300 bg-white/85 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500" />
           <button type="submit" className="w-full rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Sign up</button>
         </form>
         {error && <p className="mt-3 text-xs text-rose-600">{error}</p>}

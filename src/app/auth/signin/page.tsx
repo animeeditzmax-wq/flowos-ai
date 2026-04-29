@@ -52,8 +52,8 @@ export default function SignInPage() {
         </div>
 
         <form className="space-y-3" onSubmit={handleCredentialsSignIn}>
-          <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" type="email" required className="w-full rounded-lg border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-800" />
-          <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" required className="w-full rounded-lg border border-slate-300 bg-white/80 px-3 py-2 text-sm text-slate-800" />
+          <input value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" type="email" required className="w-full rounded-lg border border-slate-300 bg-white/85 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500" />
+          <input value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" type="password" required className="w-full rounded-lg border border-slate-300 bg-white/85 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-500" />
           <button type="submit" className="w-full rounded-lg bg-indigo-500 px-4 py-2 text-sm font-semibold text-white">Login</button>
         </form>
 
