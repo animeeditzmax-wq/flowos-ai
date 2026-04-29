@@ -62,8 +62,7 @@ export function CommandCenterPage() {
           ))}
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Button variant="gradient" onClick={executeCommand} disabled={loading}>{loading ? "Executing..." : "Execute with AI"}</Button>
+        <div className="flex flex-wrap gap-2">          <Button variant="gradient" onClick={executeCommand} disabled={loading}>{loading ? "Executing..." : "Execute with AI"}</Button>
           <Button variant="ghost" onClick={refreshQueue}>Refresh queue</Button>
         </div>
       </Card>
