@@ -5,6 +5,7 @@ const links = [
   ["Onboarding", "/onboarding"],
   ["Dashboard", "/dashboard"],
   ["Command", "/command-center"],
+  ["AI Assistant", "/ai-assistant"],
   ["Subscriptions", "/subscriptions"],
   ["Refunds", "/refunds"],
   ["Purchase", "/purchase-assistant"],
