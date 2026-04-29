@@ -14,7 +14,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Name, valid email, and 8+ char password are required." }, { status: 400 });
     }
 
-
     if (!process.env.DATABASE_URL) {
       if (fallbackUsers.has(email)) {
         return NextResponse.json({ error: "Account already exists." }, { status: 409 });
