@@ -5,7 +5,7 @@ export async function generateWeeklyReport(userId: string) {
   const weekStart = startOfWeek(new Date());
   const weekEnd = endOfWeek(new Date());
 
-  const completedTasks = await prisma.aiTask.count({ where: { userId, status: "COMPLETED" } });
+  const completedTasks = await prisma.aITask.count({ where: { userId, status: "COMPLETED" } });
   const completedRefunds = await prisma.refundClaim.count({ where: { userId, status: "PAID" } });
   const removedSubscriptions = await prisma.subscription.count({ where: { userId, isActive: false } });
 

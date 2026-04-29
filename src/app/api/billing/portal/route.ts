@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { requireUser } from "@/server/security/guard";
 import { prisma } from "@/server/db/prisma";
 import { createBillingPortalSession } from "@/server/services/billing.service";
 
-export async function POST(_req: NextRequest) {
+export async function POST() {
   const auth = await requireUser();
   if ("error" in auth) return auth.error;
 

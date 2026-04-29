@@ -13,4 +13,15 @@ const envSchema = z.object({
   RATE_LIMIT_WINDOW_MS: z.coerce.number().default(60_000)
 });
 
-export const env = envSchema.parse(process.env);
+const rawEnv = {
+  ...process.env,
+  DATABASE_URL: process.env.DATABASE_URL ?? "postgresql://flowos:flowos@localhost:5432/flowos",
+  NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET ?? "dev-nextauth-secret",
+  NEXTAUTH_URL: process.env.NEXTAUTH_URL ?? "http://localhost:3000",
+  OPENAI_API_KEY: process.env.OPENAI_API_KEY ?? "openai-placeholder",
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY ?? "sk_test_placeholder",
+  STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET ?? "whsec_placeholder",
+  APP_URL: process.env.APP_URL ?? "http://localhost:3000"
+};
+
+export const env = envSchema.parse(rawEnv);

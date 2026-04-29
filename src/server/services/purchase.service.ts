@@ -1,4 +1,5 @@
 import OpenAI from "openai";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/server/db/prisma";
 import { env } from "@/server/config/env";
 
@@ -17,9 +18,9 @@ export async function recommendPurchase(userId: string, query: string, budgetUsd
     ]
   });
 
-  let recommendation: unknown = { items: [], estimatedSavings: 0 };
+  let recommendation: Record<string, unknown> = { items: [], estimatedSavings: 0 };
   try {
-    recommendation = JSON.parse(completion.output_text);
+    recommendation = JSON.parse(completion.output_text) as Record<string, unknown>;
   } catch {
     recommendation = {
       items: [{ name: "Fallback recommendation", price: budgetUsd * 0.9, reason: "Model parse fallback" }],
@@ -32,8 +33,8 @@ export async function recommendPurchase(userId: string, query: string, budgetUsd
       userId,
       query,
       budgetUsd,
-      recommendation,
-      estimatedSaving: Number((recommendation as { estimatedSavings?: number }).estimatedSavings ?? 0),
+      recommendation: recommendation as Prisma.InputJsonValue,
+      estimatedSaving: Number(recommendation.estimatedSavings ?? 0),
       sourceCount: 3
     }
   });

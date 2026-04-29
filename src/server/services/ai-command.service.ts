@@ -44,7 +44,7 @@ export async function createAndClassifyTask(userId: string, command: string) {
 
   const approvalRequired = parsed.sensitivity !== "LOW";
 
-  const task = await prisma.aiTask.create({
+  const task = await prisma.aITask.create({
     data: {
       userId,
       command,
@@ -58,7 +58,7 @@ export async function createAndClassifyTask(userId: string, command: string) {
     }
   });
 
-  await prisma.aiTaskHistory.create({
+  await prisma.aITaskHistory.create({
     data: {
       userId,
       taskId: task.id,
@@ -71,12 +71,12 @@ export async function createAndClassifyTask(userId: string, command: string) {
 }
 
 export async function approveTask(taskId: string, userId: string) {
-  const task = await prisma.aiTask.update({
+  const task = await prisma.aITask.update({
     where: { id: taskId, userId },
     data: { status: TaskStatus.APPROVED, approvedAt: new Date() }
   });
 
-  await prisma.aiTaskHistory.create({
+  await prisma.aITaskHistory.create({
     data: { userId, taskId: task.id, event: "TASK_APPROVED" }
   });
 

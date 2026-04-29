@@ -7,7 +7,7 @@ export async function createNotification(userId: string, type: NotificationType,
   });
 }
 
-export async function sendEmailNotification(_email: string, _subject: string, _body: string) {
+export async function sendEmailNotification(email: string, subject: string, body: string) {
   // Integrate SendGrid/Postmark/Resend in production.
-  return { delivered: true };
+  return { delivered: true, preview: { email, subject, body } };
 }
