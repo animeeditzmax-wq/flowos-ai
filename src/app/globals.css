@@ -47,3 +47,42 @@ body {
       0 20px 60px rgba(0, 0, 0, 0.35);
   }
 }
+
+@keyframes fish-swim-loop {
+  0% {
+    transform: translateX(-8rem) translateY(0px);
+  }
+  25% {
+    transform: translateX(18vw) translateY(-4px);
+  }
+  50% {
+    transform: translateX(52vw) translateY(3px);
+  }
+  75% {
+    transform: translateX(78vw) translateY(-2px);
+  }
+  100% {
+    transform: translateX(108vw) translateY(0px);
+  }
+}
+
+@keyframes stream-pulse {
+  0%,
+  100% {
+    opacity: 0.28;
+    filter: blur(10px);
+  }
+  50% {
+    opacity: 0.48;
+    filter: blur(14px);
+  }
+}
+
+.fish-swim {
+  animation: fish-swim-loop 16s linear infinite;
+}
+
+.stream-glow {
+  background: radial-gradient(circle at center, rgba(185, 223, 246, 0.5), rgba(185, 223, 246, 0));
+  animation: stream-pulse 6s ease-in-out infinite;
+}

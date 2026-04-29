@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { TopNav } from "@/components/shared/top-nav";
+import { Sidebar } from "@/components/shared/sidebar";
 
 export const metadata: Metadata = {
   title: "FlowOS AI",
@@ -10,9 +10,11 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <body>
-        <TopNav />
-        {children}
+      <body className="bg-slate-950 text-white">
+        <div className="md:flex">
+          <Sidebar />
+          <div className="min-h-screen flex-1">{children}</div>
+        </div>
       </body>
     </html>
   );
