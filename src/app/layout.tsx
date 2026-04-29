@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Sidebar } from "@/components/shared/sidebar";
+import { AppShell } from "@/components/shared/app-shell";
 
 export const metadata: Metadata = {
   title: "FlowOS AI",
@@ -11,10 +11,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="dark">
       <body className="bg-slate-950 text-white">
-        <div className="md:flex">
-          <Sidebar />
-          <div className="min-h-screen flex-1">{children}</div>
-        </div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   );
